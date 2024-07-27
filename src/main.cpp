@@ -4,33 +4,44 @@
 #define dirPin 22
 #define stepPin 52
 #define motorInterfaceType 1
-#define lead_size 1
+#define lead_size 1.0
 
 using namespace std;
 
 int stepsPerRev;
 int currSpeed;
+int last = 0;
 
 AccelStepper stepper = AccelStepper(motorInterfaceType, stepPin, dirPin);
 void setup() {
   // put your setup code here, to run once:
   stepper.setMaxSpeed(10000);
   stepper.setAcceleration(10000);
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.setTimeout(10);
   stepsPerRev = 6400;
 }
 
 void moveRevolutions(float revs) {
 	long stepsToGo = static_cast<long>(revs * static_cast<float>(stepsPerRev));
-  //Serial.println(stepsToGo);
+  //Serial.print("moving %d steps: ");
+  long relativeSteps = stepsToGo - last;
+  last = stepsToGo;
+  Serial.println(relativeSteps);
 	stepper.moveTo(stepsToGo);
-  stepper.setSpeed(currSpeed);
+  // stepper.setSpeed(currSpeed);
   stepper.runToPosition();
+  // while (!stepper.isRunning()) {
+  //   delay(1);
+  // }
+  Serial.println("done");
+  //Serial.write(1);
 }
 
 void moveDistance(float distance) { // move a distance in MM
-  long mmToRev = static_cast<long>(distance * static_cast<float>(lead_size));
+  //Serial.println(distance);
+  float mmToRev = distance * float(lead_size);
+  //Serial.println(mmToRev);
   moveRevolutions(mmToRev);
 }
 
@@ -70,9 +81,9 @@ moving: [m, type, val]
       str = str.substring(index+1);
     }
   }
-  Serial.println(processed[0]);
-  Serial.println(processed[1]);
-  Serial.println(processed[2]);
+  // Serial.println(processed[0]);
+  // Serial.println(processed[1]);
+  // Serial.println(processed[2]);
   if (processed[0] == "s") {
     if (processed[1] == "spr") {
         stepsPerRev = processed[2].toInt();
@@ -96,7 +107,7 @@ moving: [m, type, val]
         moveRevolutions(processed[2].toFloat());
     }
     else if (processed[1] == "d") {
-        moveRevolutions(processed[2].toFloat());
+        moveDistance(processed[2].toFloat());
     }
   }
 
@@ -104,8 +115,10 @@ moving: [m, type, val]
 
 void loop() {
   // put your main code here, to run repeatedly:
-  // moveDistance(10); // move 10 mm
-  // delay(1000);
+  // stepper.moveTo(10000); // move 10 mm
+  // stepper.runToPosition();
+  // moveDistance(10);
+  // delay(100);
   // moveDistance(-10);
   // delay(1000);
   // stepper.moveTo(4000);

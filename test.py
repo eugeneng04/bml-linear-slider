@@ -1,6 +1,6 @@
 import serial, time
 
-ser = serial.Serial("/dev/cu.usbmodem11101", baudrate = 9600)
+ser = serial.Serial("/dev/cu.usbmodem1101", baudrate = 9600)
 time.sleep(2)
 
 def setMaxSpeed(speed):
